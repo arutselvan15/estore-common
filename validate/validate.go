@@ -7,13 +7,21 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/arutselvan15/estore-common/config"
+	cfg "github.com/arutselvan15/estore-common/config"
 )
 
 var (
 	checkFreezeEnabled = checkFreezeEnabledImpl
 )
+
+// PatchOperation patch operations
+type PatchOperation struct {
+	Op    string      `json:"op"`
+	Path  string      `json:"path"`
+	Value interface{} `json:"value,omitempty"`
+}
 
 // FreezeEnabled freeze enable check
 func FreezeEnabled(component string) (bool, string, error) {
@@ -38,6 +46,29 @@ func FreezeEnabled(component string) (bool, string, error) {
 	return false, "", nil
 }
 
+// AdmissionRequired check admission required
+func AdmissionRequired(ignoredNamespaces []string, admissionAnnotationKey string, metadata *metav1.ObjectMeta) (bool, string) {
+	// skip special kubernetes system namespaces
+	for _, namespace := range ignoredNamespaces {
+		if metadata.Namespace == namespace {
+			return false, fmt.Sprintf("skip validation for %s for its in special namespace: %s", metadata.Name, metadata.Namespace)
+		}
+	}
+
+	annotations := metadata.GetAnnotations()
+	if annotations == nil {
+		annotations = map[string]string{}
+	}
+
+	switch strings.ToLower(annotations[admissionAnnotationKey]) {
+	case "n", "no", "false", "off":
+		return false, fmt.Sprintf("skip validation for %s for its special annotation %s: %s", metadata.Name,
+			admissionAnnotationKey, annotations[admissionAnnotationKey])
+	}
+
+	return true, ""
+}
+
 func getFreezeComponents() map[string]bool {
 	components := map[string]bool{}
 	for _, i := range strings.Split(viper.GetString("app.freeze.components"), ",") {
@@ -49,7 +80,7 @@ func getFreezeComponents() map[string]bool {
 
 func checkFreezeEnabledImpl(startTime, endTime string) (bool, error) {
 	if startTime != "" {
-		st, err := time.Parse(config.TimeLayout, startTime)
+		st, err := time.Parse(cfg.TimeLayout, startTime)
 		if err != nil {
 			return false, fmt.Errorf("unable to parse freeze start time %s, %s", startTime, err.Error())
 		}
@@ -62,7 +93,7 @@ func checkFreezeEnabledImpl(startTime, endTime string) (bool, error) {
 		if tn.Sub(st) > 0 {
 			// check freeze end time to see if still in freeze
 			if endTime != "" {
-				et, err := time.Parse(config.TimeLayout, endTime)
+				et, err := time.Parse(cfg.TimeLayout, endTime)
 				if err != nil {
 					return false, fmt.Errorf("unable to parse freeze end time %s, %s", endTime, err.Error())
 				}
@@ -84,4 +115,60 @@ func checkFreezeEnabledImpl(startTime, endTime string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+// CreatePatchAnnotations create annotations patch
+func CreatePatchAnnotations(currentAnnotations, addNew map[string]string) (patch []PatchOperation) {
+	if currentAnnotations == nil {
+		patch = append(patch, PatchOperation{
+			Op:    "add",
+			Path:  "/metadata/annotations",
+			Value: addNew,
+		})
+
+		return patch
+	}
+
+	for key, value := range addNew {
+		op := "add"
+		if _, ok := currentAnnotations[key]; ok {
+			op = "replace"
+		}
+
+		patch = append(patch, PatchOperation{
+			Op:    op,
+			Path:  "/metadata/annotations/" + key,
+			Value: value,
+		})
+	}
+
+	return patch
+}
+
+// CreatePatchLabels create labels patch
+func CreatePatchLabels(currentLabels, addNew map[string]string) (patch []PatchOperation) {
+	if currentLabels == nil {
+		patch = append(patch, PatchOperation{
+			Op:    "add",
+			Path:  "/metadata/labels",
+			Value: addNew,
+		})
+
+		return patch
+	}
+
+	for key, value := range addNew {
+		op := "add"
+		if _, ok := currentLabels[key]; ok {
+			op = "replace"
+		}
+
+		patch = append(patch, PatchOperation{
+			Op:    op,
+			Path:  "/metadata/labels/" + key,
+			Value: value,
+		})
+	}
+
+	return patch
 }

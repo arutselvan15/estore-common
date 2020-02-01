@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+
+	gLog "github.com/arutselvan15/go-utils/log"
 )
 
 const (
@@ -12,15 +14,17 @@ const (
 	FixtureDir = "../fixture"
 	// TimeLayout time layout
 	TimeLayout = time.RFC3339
-	// Component component name
-	Component = "estore"
-	// SubComponent sub component
-	SubComponent = "common"
+	// Application app name
+	Application = "estore"
 )
 
 var (
 	// ClusterName cluster name
 	ClusterName string
+	// LogLevel log level
+	LogLevel gLog.LevelLog
+	// KubeConfigPath kube config path
+	KubeConfigPath string
 )
 
 func init() {
@@ -43,11 +47,20 @@ func init() {
 	_ = viper.BindEnv("app.freeze.message", "FREEZE_MESSAGE")
 	_ = viper.BindEnv("app.freeze.components", "FREEZE_COMPONENTS")
 	_ = viper.BindEnv("cluster.name", "CLUSTER_NAME")
+	_ = viper.BindEnv("cluster.kubeconfig", "KUBECONFIG")
+	_ = viper.BindEnv("app.log.level", "LOG_LEVEL")
 
 	ClusterName = viper.GetString("cluster.name")
 	if ClusterName == "" {
 		ClusterName = "unknown"
 	}
+
+	LogLevel = gLog.InfoLevel
+	if viper.GetString("app.log.level") == "debug" {
+		LogLevel = gLog.DebugLevel
+	}
+
+	KubeConfigPath = viper.GetString("cluster.kubeconfig")
 }
 
 // LoadFixture load fixtures

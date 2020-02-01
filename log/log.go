@@ -4,21 +4,28 @@ package log
 import (
 	"sync"
 
-	gLog "github.com/arutselvan15/go-utils/log"
+	uLog "github.com/arutselvan15/go-utils/log"
 
 	"github.com/arutselvan15/estore-common/config"
 )
 
 var (
-	once        sync.Once
-	logInstance gLog.CustomLog
+	once   sync.Once
+	logger uLog.CommonLog
 )
 
-// GetInstance returns a singleton of the Log object
-func GetInstance() gLog.CustomLog {
+// GetLogger returns a singleton of the Log object
+func GetLogger(resource string) uLog.CommonLog {
 	once.Do(func() {
-		logInstance = gLog.NewLogger().SetComponent(config.Component).SetSubComponent(config.SubComponent).SetCluster(config.ClusterName)
+		logger = uLog.NewLogger().SetCluster(config.ClusterName).SetApplication(
+			config.Application).SetComponent(resource).SetLevel(config.LogLevel)
 	})
 
-	return logInstance
+	return logger
+}
+
+// GetNewLogger returns a new log object
+func GetNewLogger(resource string) uLog.CommonLog {
+	return uLog.NewLogger().SetCluster(config.ClusterName).SetApplication(
+		config.Application).SetComponent(resource).SetLevel(config.LogLevel)
 }

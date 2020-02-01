@@ -1,9 +1,12 @@
 app:
-  name: "estore-common"
+  name: estore-common
   freeze:
-    startTime: "2020-01-01T21:22:18-08:00"
-    endTime: "2020-01-02T21:22:18-08:00"
-    message: "application not available at this point of time to use due to code release"
-    components: "all"
+    startTime: 2020-01-01T21:22:18-08:00
+    endTime: 2020-01-02T21:22:18-08:00
+    message: application not available at this point of time to use due to code release
+    components: all
+  log:
+    level: debug
 cluster:
-  name: "dummy"
+  name: minikube
+  kubeconfig: ~/.kube/config
