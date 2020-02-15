@@ -190,8 +190,8 @@ func TestAdmissionRequired(t *testing.T) {
 
 func TestCreatePatchAnnotations(t *testing.T) {
 	type args struct {
-		currentAnnotations map[string]string
-		addNew             map[string]string
+		availableAnnotations map[string]string
+		addAnnotations       map[string]string
 	}
 
 	tests := []struct {
@@ -201,22 +201,22 @@ func TestCreatePatchAnnotations(t *testing.T) {
 	}{
 		{
 			name:      "success new patch with no current annotations",
-			args:      args{currentAnnotations: nil, addNew: map[string]string{"key1": "val1"}},
+			args:      args{availableAnnotations: nil, addAnnotations: map[string]string{"key1": "val1"}},
 			wantPatch: []PatchOperation{{Op: "add", Path: "/metadata/annotations", Value: map[string]string{"key1": "val1"}}},
 		},
 		{
 			name:      "success add patch with current annotations",
-			args:      args{currentAnnotations: map[string]string{}, addNew: map[string]string{"key1": "val1"}},
+			args:      args{availableAnnotations: map[string]string{}, addAnnotations: map[string]string{"key1": "val1"}},
 			wantPatch: []PatchOperation{{Op: "add", Path: "/metadata/annotations/key1", Value: "val1"}},
 		},
 		{
 			name:      "success replace patch with current annotations",
-			args:      args{currentAnnotations: map[string]string{"key1": "val0"}, addNew: map[string]string{"key1": "val1"}},
+			args:      args{availableAnnotations: map[string]string{"key1": "val0"}, addAnnotations: map[string]string{"key1": "val1"}},
 			wantPatch: []PatchOperation{{Op: "replace", Path: "/metadata/annotations/key1", Value: "val1"}},
 		},
 		{
 			name: "success add and replace patch with current annotations",
-			args: args{currentAnnotations: map[string]string{"key1": "val0"}, addNew: map[string]string{"key1": "val1", "key2": "val2"}},
+			args: args{availableAnnotations: map[string]string{"key1": "val0"}, addAnnotations: map[string]string{"key1": "val1", "key2": "val2"}},
 			wantPatch: []PatchOperation{
 				{Op: "replace", Path: "/metadata/annotations/key1", Value: "val1"},
 				{Op: "add", Path: "/metadata/annotations/key2", Value: "val2"}},
@@ -225,7 +225,7 @@ func TestCreatePatchAnnotations(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotPatch := CreatePatchAnnotations(tt.args.currentAnnotations, tt.args.addNew); !reflect.DeepEqual(gotPatch, tt.wantPatch) {
+			if gotPatch := CreatePatchAnnotations(tt.args.availableAnnotations, tt.args.addAnnotations); !reflect.DeepEqual(gotPatch, tt.wantPatch) {
 				t.Errorf("CreatePatchAnnotations() = %v, want %v", gotPatch, tt.wantPatch)
 			}
 		})
@@ -234,8 +234,8 @@ func TestCreatePatchAnnotations(t *testing.T) {
 
 func TestCreatePatchLabels(t *testing.T) {
 	type args struct {
-		currentLabels map[string]string
-		addNew        map[string]string
+		availableLabels map[string]string
+		addLabels       map[string]string
 	}
 
 	tests := []struct {
@@ -245,22 +245,22 @@ func TestCreatePatchLabels(t *testing.T) {
 	}{
 		{
 			name:      "success new patch with no current labels",
-			args:      args{currentLabels: nil, addNew: map[string]string{"key1": "val1"}},
+			args:      args{availableLabels: nil, addLabels: map[string]string{"key1": "val1"}},
 			wantPatch: []PatchOperation{{Op: "add", Path: "/metadata/labels", Value: map[string]string{"key1": "val1"}}},
 		},
 		{
 			name:      "success add patch with current labels",
-			args:      args{currentLabels: map[string]string{}, addNew: map[string]string{"key1": "val1"}},
+			args:      args{availableLabels: map[string]string{}, addLabels: map[string]string{"key1": "val1"}},
 			wantPatch: []PatchOperation{{Op: "add", Path: "/metadata/labels/key1", Value: "val1"}},
 		},
 		{
 			name:      "success replace patch with current labels",
-			args:      args{currentLabels: map[string]string{"key1": "val0"}, addNew: map[string]string{"key1": "val1"}},
+			args:      args{availableLabels: map[string]string{"key1": "val0"}, addLabels: map[string]string{"key1": "val1"}},
 			wantPatch: []PatchOperation{{Op: "replace", Path: "/metadata/labels/key1", Value: "val1"}},
 		},
 		{
 			name: "success add and replace patch with current labels",
-			args: args{currentLabels: map[string]string{"key1": "val0"}, addNew: map[string]string{"key1": "val1", "key2": "val2"}},
+			args: args{availableLabels: map[string]string{"key1": "val0"}, addLabels: map[string]string{"key1": "val1", "key2": "val2"}},
 			wantPatch: []PatchOperation{
 				{Op: "replace", Path: "/metadata/labels/key1", Value: "val1"},
 				{Op: "add", Path: "/metadata/labels/key2", Value: "val2"}},
@@ -269,7 +269,7 @@ func TestCreatePatchLabels(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotPatch := CreatePatchLabels(tt.args.currentLabels, tt.args.addNew); !reflect.DeepEqual(gotPatch, tt.wantPatch) {
+			if gotPatch := CreatePatchLabels(tt.args.availableLabels, tt.args.addLabels); !reflect.DeepEqual(gotPatch, tt.wantPatch) {
 				t.Errorf("CreatePatchLabels() = %v, want %v", gotPatch, tt.wantPatch)
 			}
 		})

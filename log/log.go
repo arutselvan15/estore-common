@@ -18,7 +18,7 @@ var (
 func GetLogger(resource string) uLog.CommonLog {
 	once.Do(func() {
 		logger = uLog.NewLogger().SetCluster(config.ClusterName).SetApplication(
-			config.Application).SetComponent(resource).SetLevel(config.LogLevel)
+			config.Application).SetResource(resource).SetLevel(config.LogLevel)
 	})
 
 	return logger
@@ -27,5 +27,5 @@ func GetLogger(resource string) uLog.CommonLog {
 // GetNewLogger returns a new log object
 func GetNewLogger(resource string) uLog.CommonLog {
 	return uLog.NewLogger().SetCluster(config.ClusterName).SetApplication(
-		config.Application).SetComponent(resource).SetLevel(config.LogLevel)
+		config.Application).SetResource(resource).SetLevel(config.LogLevel)
 }

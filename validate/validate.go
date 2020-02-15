@@ -69,6 +69,62 @@ func AdmissionRequired(ignoredNamespaces []string, admissionAnnotationKey string
 	return true, ""
 }
 
+// CreatePatchAnnotations create annotations patch
+func CreatePatchAnnotations(availableAnnotations, addAnnotations map[string]string) (patch []PatchOperation) {
+	if availableAnnotations == nil {
+		patch = append(patch, PatchOperation{
+			Op:    "add",
+			Path:  "/metadata/annotations",
+			Value: addAnnotations,
+		})
+
+		return patch
+	}
+
+	for key, value := range addAnnotations {
+		op := "add"
+		if _, ok := availableAnnotations[key]; ok {
+			op = "replace"
+		}
+
+		patch = append(patch, PatchOperation{
+			Op:    op,
+			Path:  "/metadata/annotations/" + key,
+			Value: value,
+		})
+	}
+
+	return patch
+}
+
+// CreatePatchLabels create labels patch
+func CreatePatchLabels(availableLabels, addLabels map[string]string) (patch []PatchOperation) {
+	if availableLabels == nil {
+		patch = append(patch, PatchOperation{
+			Op:    "add",
+			Path:  "/metadata/labels",
+			Value: addLabels,
+		})
+
+		return patch
+	}
+
+	for key, value := range addLabels {
+		op := "add"
+		if _, ok := availableLabels[key]; ok {
+			op = "replace"
+		}
+
+		patch = append(patch, PatchOperation{
+			Op:    op,
+			Path:  "/metadata/labels/" + key,
+			Value: value,
+		})
+	}
+
+	return patch
+}
+
 func getFreezeComponents() map[string]bool {
 	components := map[string]bool{}
 	for _, i := range strings.Split(viper.GetString("app.freeze.components"), ",") {
@@ -115,60 +171,4 @@ func checkFreezeEnabledImpl(startTime, endTime string) (bool, error) {
 	}
 
 	return false, nil
-}
-
-// CreatePatchAnnotations create annotations patch
-func CreatePatchAnnotations(currentAnnotations, addNew map[string]string) (patch []PatchOperation) {
-	if currentAnnotations == nil {
-		patch = append(patch, PatchOperation{
-			Op:    "add",
-			Path:  "/metadata/annotations",
-			Value: addNew,
-		})
-
-		return patch
-	}
-
-	for key, value := range addNew {
-		op := "add"
-		if _, ok := currentAnnotations[key]; ok {
-			op = "replace"
-		}
-
-		patch = append(patch, PatchOperation{
-			Op:    op,
-			Path:  "/metadata/annotations/" + key,
-			Value: value,
-		})
-	}
-
-	return patch
-}
-
-// CreatePatchLabels create labels patch
-func CreatePatchLabels(currentLabels, addNew map[string]string) (patch []PatchOperation) {
-	if currentLabels == nil {
-		patch = append(patch, PatchOperation{
-			Op:    "add",
-			Path:  "/metadata/labels",
-			Value: addNew,
-		})
-
-		return patch
-	}
-
-	for key, value := range addNew {
-		op := "add"
-		if _, ok := currentLabels[key]; ok {
-			op = "replace"
-		}
-
-		patch = append(patch, PatchOperation{
-			Op:    op,
-			Path:  "/metadata/labels/" + key,
-			Value: value,
-		})
-	}
-
-	return patch
 }

@@ -18,12 +18,12 @@ type estoreFakeClient struct {
 }
 
 // NewEstoreFakeClientForConfig fake clients
-func NewEstoreFakeClientForConfig(pdtObjects, kubeObjects []runtime.Object) (clients.EstoreClientInterface, error) {
+func NewEstoreFakeClientForConfig(pdtObjects, kubeObjects []runtime.Object) clients.EstoreClientInterface {
 	c := new(estoreFakeClient)
 	c.k8s = kubeFake.NewSimpleClientset(kubeObjects...)
 	c.ePdt = pdtFake.NewSimpleClientset(pdtObjects...)
 
-	return c, nil
+	return c
 }
 
 func (c *estoreFakeClient) GetKubeClient() kube.Interface {
