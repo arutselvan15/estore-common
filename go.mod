@@ -1,7 +1,7 @@
 module github.com/arutselvan15/estore-common
 
 require (
-	github.com/arutselvan15/estore-product-kube-client v1.0.2
+	github.com/arutselvan15/estore-product-kube-client v1.0.3
 	github.com/arutselvan15/go-utils v1.0.7
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect

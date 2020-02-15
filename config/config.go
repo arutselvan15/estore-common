@@ -24,6 +24,8 @@ var (
 	ClusterName string
 	// LogLevel log level
 	LogLevel gLog.LevelLog
+	// LogFormat log level
+	LogFormat gLog.FormatterType
 	// KubeConfigPath kube config path
 	KubeConfigPath string
 	// WhitelistNamespaces whitelist namespace
@@ -51,6 +53,14 @@ func init() {
 	_ = viper.BindEnv("app.freeze.components", "FREEZE_COMPONENTS")
 	_ = viper.BindEnv("app.whitelist.namespaces", "WHITELIST_NAMESPACES")
 	_ = viper.BindEnv("app.log.level", "LOG_LEVEL")
+	_ = viper.BindEnv("app.log.format", "LOG_FORMAT")
+	_ = viper.BindEnv("app.log.file.enabled", "LOG_FILE_ROTATE")
+	_ = viper.BindEnv("app.log.file.format", "LOG_FILE_FORMAT")
+	_ = viper.BindEnv("app.log.file.dir", "LOG_FILE_DIR")
+	_ = viper.BindEnv("app.log.file.name", "LOG_FILE_NAME")
+	_ = viper.BindEnv("app.log.file.size", "LOG_FILE_SIZE")
+	_ = viper.BindEnv("app.log.file.age", "LOG_FILE_AGE")
+	_ = viper.BindEnv("app.log.file.backup", "LOG_FILE_BACKUP")
 
 	_ = viper.BindEnv("cluster.name", "CLUSTER_NAME")
 	_ = viper.BindEnv("cluster.kubeconfig", "KUBECONFIG")
@@ -63,6 +73,11 @@ func init() {
 	LogLevel = gLog.InfoLevel
 	if viper.GetString("app.log.level") == "debug" {
 		LogLevel = gLog.DebugLevel
+	}
+
+	LogFormat = gLog.TextFormatterType
+	if viper.GetString("app.log.format") == "json" {
+		LogFormat = gLog.JSONFormatterType
 	}
 
 	if viper.GetString("app.whitelist.namespaces") != "" {

@@ -7,6 +7,16 @@ app:
     components: all
   log:
     level: debug
+    format: text
+    file:
+      enabled: false
+      format: json
+      dir: /tmp
+      name: estore.log
+      # size in MB
+      size: 5
+      age: 5
+      backup: 3
   whitelist:
     namespaces: dummy
 cluster:
