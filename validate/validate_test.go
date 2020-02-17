@@ -215,11 +215,9 @@ func TestCreatePatchAnnotations(t *testing.T) {
 			wantPatch: []PatchOperation{{Op: "replace", Path: "/metadata/annotations/key1", Value: "val1"}},
 		},
 		{
-			name: "success add and replace patch with current annotations",
-			args: args{availableAnnotations: map[string]string{"key1": "val0"}, addAnnotations: map[string]string{"key1": "val1", "key2": "val2"}},
-			wantPatch: []PatchOperation{
-				{Op: "replace", Path: "/metadata/annotations/key1", Value: "val1"},
-				{Op: "add", Path: "/metadata/annotations/key2", Value: "val2"}},
+			name:      "success add with slash annotations",
+			args:      args{availableAnnotations: nil, addAnnotations: map[string]string{"resource.app.com/key1": "val1"}},
+			wantPatch: []PatchOperation{{Op: "add", Path: "/metadata/annotations", Value: map[string]string{"resource.app.com~1key1": "val1"}}},
 		},
 	}
 
@@ -259,11 +257,9 @@ func TestCreatePatchLabels(t *testing.T) {
 			wantPatch: []PatchOperation{{Op: "replace", Path: "/metadata/labels/key1", Value: "val1"}},
 		},
 		{
-			name: "success add and replace patch with current labels",
-			args: args{availableLabels: map[string]string{"key1": "val0"}, addLabels: map[string]string{"key1": "val1", "key2": "val2"}},
-			wantPatch: []PatchOperation{
-				{Op: "replace", Path: "/metadata/labels/key1", Value: "val1"},
-				{Op: "add", Path: "/metadata/labels/key2", Value: "val2"}},
+			name:      "success add with slash",
+			args:      args{availableLabels: nil, addLabels: map[string]string{"resource.app.com/key1": "val1"}},
+			wantPatch: []PatchOperation{{Op: "add", Path: "/metadata/labels", Value: map[string]string{"resource.app.com~1key1": "val1"}}},
 		},
 	}
 
@@ -271,6 +267,35 @@ func TestCreatePatchLabels(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if gotPatch := CreatePatchLabels(tt.args.availableLabels, tt.args.addLabels); !reflect.DeepEqual(gotPatch, tt.wantPatch) {
 				t.Errorf("CreatePatchLabels() = %v, want %v", gotPatch, tt.wantPatch)
+			}
+		})
+	}
+}
+
+func Test_patchHandleSlash(t *testing.T) {
+	type args struct {
+		data map[string]string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want map[string]string
+	}{
+		{
+			name: "success handle slash", args: args{map[string]string{"hello/hello/hello": "hello/hello"}},
+			want: map[string]string{"hello~1hello~1hello": "hello/hello"},
+		},
+		{
+			name: "success handle normal", args: args{map[string]string{"hello+hello": "hello/hello", "hello:hello": "hello/hello"}},
+			want: map[string]string{"hello+hello": "hello/hello", "hello:hello": "hello/hello"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := patchHandleSlash(tt.args.data); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("patchHandleSlash() = %v, want %v", got, tt.want)
 			}
 		})
 	}

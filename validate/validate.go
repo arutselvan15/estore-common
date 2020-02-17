@@ -71,6 +71,10 @@ func AdmissionRequired(ignoredNamespaces []string, admissionAnnotationKey string
 
 // CreatePatchAnnotations create annotations patch
 func CreatePatchAnnotations(availableAnnotations, addAnnotations map[string]string) (patch []PatchOperation) {
+	fmt.Println(addAnnotations)
+	addAnnotations = patchHandleSlash(addAnnotations)
+	fmt.Println(addAnnotations)
+
 	if availableAnnotations == nil {
 		patch = append(patch, PatchOperation{
 			Op:    "add",
@@ -99,6 +103,8 @@ func CreatePatchAnnotations(availableAnnotations, addAnnotations map[string]stri
 
 // CreatePatchLabels create labels patch
 func CreatePatchLabels(availableLabels, addLabels map[string]string) (patch []PatchOperation) {
+	addLabels = patchHandleSlash(addLabels)
+
 	if availableLabels == nil {
 		patch = append(patch, PatchOperation{
 			Op:    "add",
@@ -171,4 +177,15 @@ func checkFreezeEnabledImpl(startTime, endTime string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func patchHandleSlash(data map[string]string) map[string]string {
+	updateData := make(map[string]string)
+
+	for i, k := range data {
+		i = strings.Replace(i, "/", "~1", -1)
+		updateData[i] = k
+	}
+
+	return updateData
 }
