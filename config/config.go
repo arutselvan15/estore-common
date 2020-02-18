@@ -28,6 +28,8 @@ var (
 	LogFormat gLog.FormatterType
 	// KubeConfigPath kube config path
 	KubeConfigPath string
+	// WhitelistUsers white list users
+	WhitelistUsers []string
 	// WhitelistNamespaces whitelist namespace
 	WhitelistNamespaces []string
 )
@@ -52,6 +54,7 @@ func init() {
 	_ = viper.BindEnv("app.freeze.message", "FREEZE_MESSAGE")
 	_ = viper.BindEnv("app.freeze.components", "FREEZE_COMPONENTS")
 	_ = viper.BindEnv("app.whitelist.namespaces", "WHITELIST_NAMESPACES")
+	_ = viper.BindEnv("app.whitelist.users", "WHITELIST_USERS")
 	_ = viper.BindEnv("app.log.level", "LOG_LEVEL")
 	_ = viper.BindEnv("app.log.format", "LOG_FORMAT")
 	_ = viper.BindEnv("app.log.file.enabled", "LOG_FILE_ROTATE")
@@ -82,6 +85,10 @@ func init() {
 
 	if viper.GetString("app.whitelist.namespaces") != "" {
 		WhitelistNamespaces = strings.Split(viper.GetString("app.whitelist.namespaces"), ",")
+	}
+
+	if viper.GetString("app.whitelist.namespaces") != "" {
+		WhitelistNamespaces = strings.Split(viper.GetString("app.whitelist.users"), ",")
 	}
 
 	KubeConfigPath = viper.GetString("cluster.kubeconfig")
