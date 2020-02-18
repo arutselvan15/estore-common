@@ -126,22 +126,22 @@ func CreatePatchLabels(availableLabels, addLabels map[string]string) (patch []Pa
 
 // CheckSystemUser user
 func CheckSystemUser(user string) bool {
-	return checkMatch(user, cfg.SystemUsers)
+	return checkMatch(user, cfg.GetSystemUsers())
 }
 
 // CheckSystemNamespace ns
 func CheckSystemNamespace(ns string) bool {
-	return checkMatch(ns, cfg.SystemNamespaces)
+	return checkMatch(ns, cfg.GetSystemNamespaces())
 }
 
 // CheckBlacklistUser user
 func CheckBlacklistUser(user string) bool {
-	return checkMatch(user, cfg.BlacklistUsers)
+	return checkMatch(user, cfg.GetBlacklistUsers())
 }
 
 // CheckBlacklistNamespace ns
 func CheckBlacklistNamespace(ns string) bool {
-	return checkMatch(ns, cfg.BlacklistNamespaces)
+	return checkMatch(ns, cfg.GetBlacklistNamespaces())
 }
 
 func getFreezeComponents() map[string]bool {

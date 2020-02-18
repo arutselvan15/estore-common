@@ -2,11 +2,7 @@
 package log
 
 import (
-	"fmt"
-	"strings"
 	"sync"
-
-	"github.com/spf13/viper"
 
 	uLog "github.com/arutselvan15/go-utils/log"
 
@@ -35,29 +31,18 @@ func GetNewLogger(resource string) uLog.CommonLog {
 func getLogger(resource string) uLog.CommonLog {
 	var newLogger uLog.CommonLog
 
-	// log file config
-	if viper.GetBool("app.log.file.enabled") {
-		fName := fmt.Sprintf("%s/%s", viper.GetString("app.log.file.dir"),
-			viper.GetString("app.log.file.name"))
+	lc := config.GetLogConfig()
 
-		newLogger = uLog.NewLoggerWithFile(fName, viper.GetInt("app.log.file.size"),
-			viper.GetInt("app.log.file.age"), viper.GetInt("app.log.file.backup"))
-
-		switch strings.ToLower(viper.GetString("app.log.file.format")) {
-		case "text":
-			newLogger.SetLogFileFormatterType(uLog.TextFormatterType)
-		case "json":
-			newLogger.SetLogFileFormatterType(uLog.JSONFormatterType)
-		default:
-			newLogger.SetLogFileFormatterType(uLog.TextFormatterType)
-		}
+	if lc.LogFileEnabled {
+		newLogger = uLog.NewLoggerWithFile(lc.LogFilePath, lc.LogFileSize, lc.LogFileAge, lc.LogFileBkup)
+		newLogger.SetLogFileFormatterType(lc.LogFileFormat)
 	} else {
 		newLogger = uLog.NewLogger()
 	}
 
-	newLogger.SetCluster(config.ClusterName).SetApplication(
-		config.Application).SetResource(resource).SetLevel(
-		config.LogLevel).SetFormatterType(config.LogFormat)
+	newLogger.SetCluster(config.GetClusterName()).SetApplication(
+		config.GetAppName()).SetResource(resource).SetLevel(
+		lc.Level).SetFormatterType(lc.Format)
 
 	return newLogger
 }

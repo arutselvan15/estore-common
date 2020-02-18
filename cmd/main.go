@@ -19,8 +19,8 @@ func main() {
 	log := cLog.GetLogger("common")
 
 	// read kube config in case defined in environment variable
-	if cfg.KubeConfigPath != "" {
-		config, err = clientcmd.BuildConfigFromFlags("", cfg.KubeConfigPath)
+	if cfg.GetKubeConfigPath() != "" {
+		config, err = clientcmd.BuildConfigFromFlags("", cfg.GetKubeConfigPath())
 		if err != nil {
 			log.Fatalf("error creating config using kube config path: %v", err)
 		}

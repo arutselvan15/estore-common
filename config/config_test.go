@@ -27,3 +27,14 @@ func TestLoadFixture(t *testing.T) {
 		})
 	}
 }
+
+func TestGetConfig(t *testing.T) {
+	GetAppName()
+	GetKubeConfigPath()
+	GetLogConfig()
+	GetClusterName()
+	GetSystemNamespaces()
+	GetSystemUsers()
+	GetBlacklistNamespaces()
+	GetBlacklistUsers()
+}

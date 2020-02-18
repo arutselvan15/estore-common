@@ -1,5 +1,6 @@
 app:
-  name: estore-common
+  name: estore
+  component: estore-common
   freeze:
     startTime: 2020-01-01T21:22:18-08:00
     endTime: 2020-01-02T21:22:18-08:00

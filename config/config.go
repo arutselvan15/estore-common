@@ -2,6 +2,7 @@
 package config
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -15,28 +16,19 @@ const (
 	FixtureDir = "../fixture"
 	// TimeLayout time layout
 	TimeLayout = time.RFC3339
-	// Application app name
-	Application = "estore"
 )
 
-var (
-	// ClusterName cluster name
-	ClusterName string
-	// LogLevel log level
-	LogLevel gLog.LevelLog
-	// LogFormat log level
-	LogFormat gLog.FormatterType
-	// KubeConfigPath kube config path
-	KubeConfigPath string
-	// SystemUsers white list users
-	SystemUsers map[string]bool
-	// SystemNamespaces whitelist namespace
-	SystemNamespaces map[string]bool
-	// BlacklistUsers black list users
-	BlacklistUsers map[string]bool
-	// BlacklistNamespaces blacklist namespace
-	BlacklistNamespaces map[string]bool
-)
+// LogConfig lc
+type LogConfig struct {
+	Level          gLog.LevelLog
+	Format         gLog.FormatterType
+	LogFileEnabled bool
+	LogFilePath    string
+	LogFileFormat  gLog.FormatterType
+	LogFileSize    int
+	LogFileAge     int
+	LogFileBkup    int
+}
 
 func init() {
 	defaultConfigPaths := []string{
@@ -53,17 +45,21 @@ func init() {
 	// errors ignored
 	_ = viper.ReadInConfig()
 
+	_ = viper.BindEnv("app.name", "APP_NAME")
 	_ = viper.BindEnv("app.freeze.startTime", "FREEZE_START_TIME")
 	_ = viper.BindEnv("app.freeze.endTime", "FREEZE_END_TIME")
 	_ = viper.BindEnv("app.freeze.message", "FREEZE_MESSAGE")
 	_ = viper.BindEnv("app.freeze.components", "FREEZE_COMPONENTS")
+
 	_ = viper.BindEnv("app.system.namespaces", "SYSTEM_NAMESPACES")
 	_ = viper.BindEnv("app.system.users", "SYSTEM_USERS")
+
 	_ = viper.BindEnv("app.blacklist.namespaces", "BLACKLIST_NAMESPACES")
 	_ = viper.BindEnv("app.blacklist.users", "BLACKLIST_USERS")
+
 	_ = viper.BindEnv("app.log.level", "LOG_LEVEL")
 	_ = viper.BindEnv("app.log.format", "LOG_FORMAT")
-	_ = viper.BindEnv("app.log.file.enabled", "LOG_FILE_ROTATE")
+	_ = viper.BindEnv("app.log.file.enabled", "LOG_FILE_ENABLED")
 	_ = viper.BindEnv("app.log.file.format", "LOG_FILE_FORMAT")
 	_ = viper.BindEnv("app.log.file.dir", "LOG_FILE_DIR")
 	_ = viper.BindEnv("app.log.file.name", "LOG_FILE_NAME")
@@ -73,28 +69,6 @@ func init() {
 
 	_ = viper.BindEnv("cluster.name", "CLUSTER_NAME")
 	_ = viper.BindEnv("cluster.kubeconfig", "KUBECONFIG")
-
-	ClusterName = viper.GetString("cluster.name")
-	if ClusterName == "" {
-		ClusterName = "unknown"
-	}
-
-	LogLevel = gLog.InfoLevel
-	if viper.GetString("app.log.level") == "debug" {
-		LogLevel = gLog.DebugLevel
-	}
-
-	LogFormat = gLog.TextFormatterType
-	if viper.GetString("app.log.format") == "json" {
-		LogFormat = gLog.JSONFormatterType
-	}
-
-	SystemNamespaces = stringToBoolMap(viper.GetString("app.system.namespaces"), ",")
-	SystemUsers = stringToBoolMap(viper.GetString("app.system.users"), ",")
-	BlacklistNamespaces = stringToBoolMap(viper.GetString("app.blacklist.namespaces"), ",")
-	BlacklistUsers = stringToBoolMap(viper.GetString("app.blacklist.users"), ",")
-
-	KubeConfigPath = viper.GetString("cluster.kubeconfig")
 }
 
 // LoadFixture load fixtures
@@ -105,12 +79,80 @@ func LoadFixture(dir string) error {
 	return viper.ReadInConfig()
 }
 
+// GetAppName app name
+func GetAppName() string {
+	return viper.GetString("app.name")
+}
+
+// GetKubeConfigPath kube config
+func GetKubeConfigPath() string {
+	return viper.GetString("cluster.kubeconfig")
+}
+
+// GetLogConfig log config
+func GetLogConfig() LogConfig {
+	lc := LogConfig{}
+
+	lc.Format = gLog.TextFormatterType
+	if viper.GetString("app.log.format") == "json" {
+		lc.Format = gLog.JSONFormatterType
+	}
+
+	lc.Level = gLog.InfoLevel
+	if viper.GetString("app.log.level") == "debug" {
+		lc.Level = gLog.DebugLevel
+	}
+
+	lc.LogFileEnabled = viper.GetBool("app.log.file.enabled")
+	lc.LogFilePath = fmt.Sprintf("%s/%s", viper.GetString("app.log.file.dir"), viper.GetString("app.log.file.name"))
+	lc.LogFileAge = viper.GetInt("app.log.file.age")
+	lc.LogFileBkup = viper.GetInt("app.log.file.backup")
+	lc.LogFileSize = viper.GetInt("app.log.file.size")
+
+	lc.LogFileFormat = gLog.TextFormatterType
+	if viper.GetString("app.log.format") == "json" {
+		lc.LogFileFormat = gLog.JSONFormatterType
+	}
+
+	return lc
+}
+
+// GetClusterName cluster name
+func GetClusterName() string {
+	clusterName := viper.GetString("cluster.name")
+	if clusterName == "" {
+		clusterName = "unknown"
+	}
+
+	return clusterName
+}
+
+// GetSystemNamespaces sys ns
+func GetSystemNamespaces() map[string]bool {
+	return stringToBoolMap(viper.GetString("app.system.namespaces"), ",")
+}
+
+// GetSystemUsers sys users
+func GetSystemUsers() map[string]bool {
+	return stringToBoolMap(viper.GetString("app.system.users"), ",")
+}
+
+// GetBlacklistNamespaces black list ns
+func GetBlacklistNamespaces() map[string]bool {
+	return stringToBoolMap(viper.GetString("app.blacklist.namespaces"), ",")
+}
+
+// GetBlacklistUsers black list users
+func GetBlacklistUsers() map[string]bool {
+	return stringToBoolMap(viper.GetString("app.blacklist.users"), ",")
+}
+
 func stringToBoolMap(str, sep string) map[string]bool {
 	strBoolMap := make(map[string]bool)
 
 	if str != "" {
 		for _, i := range strings.Split(str, sep) {
-			BlacklistUsers[i] = true
+			strBoolMap[i] = true
 		}
 	}
 
