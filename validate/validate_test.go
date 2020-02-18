@@ -155,7 +155,6 @@ func Test_getFreezeComponents(t *testing.T) {
 
 func TestAdmissionRequired(t *testing.T) {
 	type args struct {
-		ignoredNamespaces      []string
 		admissionAnnotationKey string
 		metadata               *metav1.ObjectMeta
 	}
@@ -167,21 +166,17 @@ func TestAdmissionRequired(t *testing.T) {
 	}{
 		{
 			name: "success admission required", want: true,
-			args: args{[]string{}, "", &metav1.ObjectMeta{Namespace: ""}},
-		},
-		{
-			name: "success admission not required special namespace", want: false,
-			args: args{[]string{"estore"}, "", &metav1.ObjectMeta{Namespace: "estore"}},
+			args: args{"", &metav1.ObjectMeta{Namespace: ""}},
 		},
 		{
 			name: "success admission not required special annotation", want: false,
-			args: args{[]string{""}, "validate", &metav1.ObjectMeta{Annotations: map[string]string{"validate": "no"}}},
+			args: args{"validate", &metav1.ObjectMeta{Annotations: map[string]string{"validate": "no"}}},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _ := AdmissionRequired(tt.args.ignoredNamespaces, tt.args.admissionAnnotationKey, tt.args.metadata); got != tt.want {
+			if got, _ := AdmissionRequired(tt.args.admissionAnnotationKey, tt.args.metadata); got != tt.want {
 				t.Errorf("AdmissionRequired() = %v, want %v", got, tt.want)
 			}
 		})

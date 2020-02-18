@@ -47,14 +47,7 @@ func FreezeEnabled(component string) (bool, string, error) {
 }
 
 // AdmissionRequired check admission required
-func AdmissionRequired(ignoredNamespaces []string, admissionAnnotationKey string, metadata *metav1.ObjectMeta) (bool, string) {
-	// skip special kubernetes system namespaces
-	for _, namespace := range ignoredNamespaces {
-		if metadata.Namespace == namespace {
-			return false, fmt.Sprintf("skip validation for %s for its in special namespace: %s", metadata.Name, metadata.Namespace)
-		}
-	}
-
+func AdmissionRequired(admissionAnnotationKey string, metadata *metav1.ObjectMeta) (bool, string) {
 	annotations := metadata.GetAnnotations()
 	if annotations == nil {
 		annotations = map[string]string{}
