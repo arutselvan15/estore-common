@@ -300,3 +300,116 @@ func Test_patchHandleSlash(t *testing.T) {
 		})
 	}
 }
+
+func TestCheckBlacklistNamespace(t *testing.T) {
+	type args struct {
+		ns string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "success check black list ns", args: args{ns: "test"}, want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CheckBlacklistNamespace(tt.args.ns); got != tt.want {
+				t.Errorf("CheckBlacklistNamespace() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCheckBlacklistUser(t *testing.T) {
+	type args struct {
+		user string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "success check black list user", args: args{user: "test"}, want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CheckBlacklistUser(tt.args.user); got != tt.want {
+				t.Errorf("CheckBlacklistUser() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCheckSystemNamespace(t *testing.T) {
+	type args struct {
+		ns string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "success check system ns", args: args{ns: "test"}, want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CheckSystemNamespace(tt.args.ns); got != tt.want {
+				t.Errorf("CheckSystemNamespace() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCheckSystemUser(t *testing.T) {
+	type args struct {
+		user string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "success check system user", args: args{user: "test"}, want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CheckSystemUser(tt.args.user); got != tt.want {
+				t.Errorf("CheckSystemUser() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_checkMatch(t *testing.T) {
+	type args struct {
+		value   string
+		options map[string]bool
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "success perfect match", args: args{value: "test", options: map[string]bool{"test": true}}, want: true},
+		{name: "success prefix match", args: args{value: "test-user", options: map[string]bool{"test": true}}, want: true},
+		{name: "success no match", args: args{value: "test", options: map[string]bool{"unknown": true}}, want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := checkMatch(tt.args.value, tt.args.options); got != tt.want {
+				t.Errorf("checkMatch() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -17,8 +17,12 @@ app:
       size: 5
       age: 5
       backup: 3
-  whitelist:
-    namespaces: dummy
+  system:
+    namespaces: kube, default
+    users: system:serviceaccount:kube
+  blacklist:
+    namespaces: virus
+    users: stranger
 cluster:
   name: minikube
   kubeconfig: ~/.kube/config

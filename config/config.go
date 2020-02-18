@@ -28,10 +28,14 @@ var (
 	LogFormat gLog.FormatterType
 	// KubeConfigPath kube config path
 	KubeConfigPath string
-	// WhitelistUsers white list users
-	WhitelistUsers []string
-	// WhitelistNamespaces whitelist namespace
-	WhitelistNamespaces []string
+	// SystemUsers white list users
+	SystemUsers map[string]bool
+	// SystemNamespaces whitelist namespace
+	SystemNamespaces map[string]bool
+	// BlacklistUsers black list users
+	BlacklistUsers map[string]bool
+	// BlacklistNamespaces blacklist namespace
+	BlacklistNamespaces map[string]bool
 )
 
 func init() {
@@ -53,8 +57,10 @@ func init() {
 	_ = viper.BindEnv("app.freeze.endTime", "FREEZE_END_TIME")
 	_ = viper.BindEnv("app.freeze.message", "FREEZE_MESSAGE")
 	_ = viper.BindEnv("app.freeze.components", "FREEZE_COMPONENTS")
-	_ = viper.BindEnv("app.whitelist.namespaces", "WHITELIST_NAMESPACES")
-	_ = viper.BindEnv("app.whitelist.users", "WHITELIST_USERS")
+	_ = viper.BindEnv("app.system.namespaces", "SYSTEM_NAMESPACES")
+	_ = viper.BindEnv("app.system.users", "SYSTEM_USERS")
+	_ = viper.BindEnv("app.blacklist.namespaces", "BLACKLIST_NAMESPACES")
+	_ = viper.BindEnv("app.blacklist.users", "BLACKLIST_USERS")
 	_ = viper.BindEnv("app.log.level", "LOG_LEVEL")
 	_ = viper.BindEnv("app.log.format", "LOG_FORMAT")
 	_ = viper.BindEnv("app.log.file.enabled", "LOG_FILE_ROTATE")
@@ -83,13 +89,10 @@ func init() {
 		LogFormat = gLog.JSONFormatterType
 	}
 
-	if viper.GetString("app.whitelist.namespaces") != "" {
-		WhitelistNamespaces = strings.Split(viper.GetString("app.whitelist.namespaces"), ",")
-	}
-
-	if viper.GetString("app.whitelist.namespaces") != "" {
-		WhitelistNamespaces = strings.Split(viper.GetString("app.whitelist.users"), ",")
-	}
+	SystemNamespaces = stringToBoolMap(viper.GetString("app.system.namespaces"), ",")
+	SystemUsers = stringToBoolMap(viper.GetString("app.system.users"), ",")
+	BlacklistNamespaces = stringToBoolMap(viper.GetString("app.blacklist.namespaces"), ",")
+	BlacklistUsers = stringToBoolMap(viper.GetString("app.blacklist.users"), ",")
 
 	KubeConfigPath = viper.GetString("cluster.kubeconfig")
 }
@@ -100,4 +103,16 @@ func LoadFixture(dir string) error {
 	viper.AddConfigPath(dir)
 
 	return viper.ReadInConfig()
+}
+
+func stringToBoolMap(str, sep string) map[string]bool {
+	strBoolMap := make(map[string]bool)
+
+	if str != "" {
+		for _, i := range strings.Split(str, sep) {
+			BlacklistUsers[i] = true
+		}
+	}
+
+	return strBoolMap
 }

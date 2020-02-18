@@ -131,6 +131,26 @@ func CreatePatchLabels(availableLabels, addLabels map[string]string) (patch []Pa
 	return patch
 }
 
+// CheckSystemUser user
+func CheckSystemUser(user string) bool {
+	return checkMatch(user, cfg.SystemUsers)
+}
+
+// CheckSystemNamespace ns
+func CheckSystemNamespace(ns string) bool {
+	return checkMatch(ns, cfg.SystemNamespaces)
+}
+
+// CheckBlacklistUser user
+func CheckBlacklistUser(user string) bool {
+	return checkMatch(user, cfg.BlacklistUsers)
+}
+
+// CheckBlacklistNamespace ns
+func CheckBlacklistNamespace(ns string) bool {
+	return checkMatch(ns, cfg.BlacklistNamespaces)
+}
+
 func getFreezeComponents() map[string]bool {
 	components := map[string]bool{}
 	for _, i := range strings.Split(viper.GetString("app.freeze.components"), ",") {
@@ -188,4 +208,21 @@ func patchHandleSlash(data map[string]string) map[string]string {
 	}
 
 	return updateData
+}
+
+func checkMatch(value string, options map[string]bool) bool {
+	found := false
+
+	// check for exact match
+	if _, found = options[value]; !found {
+		// check for prefix
+		for prefix := range options {
+			if strings.HasPrefix(value, prefix) {
+				found = true
+				break
+			}
+		}
+	}
+
+	return found
 }
