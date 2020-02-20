@@ -64,9 +64,7 @@ func AdmissionRequired(admissionAnnotationKey string, metadata *metav1.ObjectMet
 
 // CreatePatchAnnotations create annotations patch
 func CreatePatchAnnotations(availableAnnotations, addAnnotations map[string]string) (patch []PatchOperation) {
-	fmt.Println(addAnnotations)
 	addAnnotations = patchHandleSlash(addAnnotations)
-	fmt.Println(addAnnotations)
 
 	if availableAnnotations == nil {
 		patch = append(patch, PatchOperation{
